@@ -1,0 +1,6 @@
+type ExampleEntity @entity {
+  id: ID!
+  count: BigInt!
+  mother: BigInt! # uint256
+  father: BigInt! # uint256
+}

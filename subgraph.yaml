@@ -1,0 +1,47 @@
+specVersion: 0.0.1
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: PepeReborn
+    network: mainnet
+    source:
+      address: "0xe714485B00E1062C1DfEF1aEE64ad6c8B85987F3"
+      abi: PepeReborn
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.2
+      language: wasm/assemblyscript
+      entities:
+        - PepeBorn
+        - PepeNamed
+        - Approval
+        - Transfer
+        - ApprovalForAll
+        - PepeResurrected
+        - UserNamed
+        - OwnershipRenounced
+        - OwnershipTransferred
+      abis:
+        - name: PepeReborn
+          file: ./abis/PepeReborn.json
+      eventHandlers:
+        - event: PepeBorn(indexed uint256,indexed uint256,indexed uint256)
+          handler: handlePepeBorn
+        - event: PepeNamed(indexed uint256)
+          handler: handlePepeNamed
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: PepeResurrected(uint256)
+          handler: handlePepeResurrected
+        - event: UserNamed(indexed address,indexed bytes32)
+          handler: handleUserNamed
+        - event: OwnershipRenounced(indexed address)
+          handler: handleOwnershipRenounced
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      file: ./src/mapping.ts
