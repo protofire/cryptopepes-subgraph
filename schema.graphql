@@ -1,6 +1,53 @@
-type ExampleEntity @entity {
+type NfpStat @entity {
   id: ID!
-  count: BigInt!
-  mother: BigInt! # uint256
-  father: BigInt! # uint256
+  "pepes born counter"
+  bornCnt: Int!
+  "pepes resurrected counter"
+  resurrectedCnt: Int!
+  "pepes minting counter. Should match born counter."
+  mintedCnt: Int!
+  "pepes burned (just in case)"
+  burnedCnt: Int!
+  "pepes named counter"
+  pepeNamedCnt: Int!
+  "pepes renounced by it's owner"
+  pepeRenouncedCnt: Int!
+  "pepes transferred counter"
+  pepeTransferCnt:Int!
+  "users named counter"
+  userNamedCnt: Int!
+  ownershipRenouncedCnt: Int!
+  ownershipTransferredCnt: Int!
+}
+
+type Pepe @entity {
+  "mandatory Id"
+  id: ID!
+  "pepe User owner"
+  owner: User
+  "pepe name"
+  name: String
+  "pepe's mother"
+  mother: Pepe 
+  "pepe's father"
+  father: Pepe 
+  "sons as a Mother"
+  sonAsMother: [Pepe!] @derivedFrom(field: "mother")
+  "sons as a Father"
+  sonAsFather: [Pepe!] @derivedFrom(field: "father")
+  "determine if pepe is Gen 0. (first generation)"
+  isGenZero: Boolean
+  "If pepes are burned should be marked here"
+  isBurned: Boolean
+  "Pepes reborn are marked here"
+  isReborn: Boolean
+}
+ 
+type User @entity {
+  "mandatory Id"
+  id: ID!
+  "pepes Owned by User"
+  pepes: [Pepe!]! @derivedFrom(field: "owner")
+  "user name"
+  name: String!
 }

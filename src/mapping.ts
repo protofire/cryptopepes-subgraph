@@ -1,98 +1,172 @@
-import { BigInt } from "@graphprotocol/graph-ts"
 import {
-  PepeReborn,
   PepeBorn,
-  PepeNamed,
-  Approval,
   Transfer,
-  ApprovalForAll,
   PepeResurrected,
   UserNamed,
   OwnershipRenounced,
-  OwnershipTransferred
+  OwnershipTransferred,
+  SetPepeNameCall
 } from "../generated/PepeReborn/PepeReborn"
-import { ExampleEntity } from "../generated/schema"
+import { 
+  NfpStat as Nfp, 
+  Pepe, 
+  User 
+} from "../generated/schema"
 
-export function handlePepeBorn(event: PepeBorn): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (entity == null) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
+function getOrCreateNfp(): Nfp {
+  let nfp = Nfp.load(ZERO_ADDRESS)
 
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+  if(nfp == null) {
+    nfp = new Nfp(ZERO_ADDRESS)
+    nfp.resurrectedCnt = 0
+    nfp.bornCnt = 0
+    nfp.mintedCnt = 0
+    nfp.burnedCnt = 0
+    nfp.pepeNamedCnt = 0
+    nfp.userNamedCnt = 0
+    nfp.pepeRenouncedCnt = 0
+    nfp.pepeTransferCnt = 0
+    nfp.ownershipRenouncedCnt = 0
+    nfp.ownershipTransferredCnt = 0
   }
 
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
-
-  // Entity fields can be set based on event parameters
-  entity.mother = event.params.mother
-  entity.father = event.params.father
-
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.supportsInterface(...)
-  // - contract.name(...)
-  // - contract.getApproved(...)
-  // - contract.approvedForAll(...)
-  // - contract.implementsERC721(...)
-  // - contract.totalSupply(...)
-  // - contract.setPepeName(...)
-  // - contract.transferFrom(...)
-  // - contract.pepeNames(...)
-  // - contract.getPepe(...)
-  // - contract.tokenOfOwnerByIndex(...)
-  // - contract.exists(...)
-  // - contract.getCozyAgain(...)
-  // - contract.ownerOf(...)
-  // - contract.userToAddress(...)
-  // - contract.balanceOf(...)
-  // - contract.approved(...)
-  // - contract.owner(...)
-  // - contract.symbol(...)
-  // - contract.transfer(...)
-  // - contract.cozyTime(...)
-  // - contract.tokenURI(...)
-  // - contract.cozyCoolDowns(...)
-  // - contract.baseTokenURI(...)
-  // - contract.contractURI(...)
-  // - contract.isApprovedForAll(...)
-  // - contract.addressToUser(...)
+  return nfp as Nfp
 }
 
-export function handlePepeNamed(event: PepeNamed): void {}
+function getOrCreateUser(id: string): User {
+  let user = User.load(id)
 
-export function handleApproval(event: Approval): void {}
+  if (user == null) {
+    user = new User(id)
+  }
 
-export function handleTransfer(event: Transfer): void {}
+  return user as User
+}
 
-export function handleApprovalForAll(event: ApprovalForAll): void {}
+export function handlePepeBorn(event: PepeBorn): void {
+  let fatherId = event.params.father.toHex()
+  let motherId = event.params.mother.toHex()
+  let pepeId = event.params.pepeId.toHex()
 
-export function handlePepeResurrected(event: PepeResurrected): void {}
+  let pepe = Pepe.load(pepeId)
 
-export function handleUserNamed(event: UserNamed): void {}
+  let nfp = getOrCreateNfp()
+  let born = nfp.bornCnt
 
-export function handleOwnershipRenounced(event: OwnershipRenounced): void {}
+  if (pepe == null) {
+    pepe = new Pepe(pepeId)
+    pepe.isBurned = false
+    pepe.isReborn = false
+  }
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+  let isMintMother = motherId == '0x0'
+  let isMintFather = motherId == '0x0'
+
+  if (isMintFather && isMintMother) {
+    pepe.isGenZero = true
+  } else {
+    pepe.isGenZero = false
+    pepe.mother = motherId
+    pepe.father = fatherId
+  }
+
+
+  nfp.bornCnt = born + 1
+
+  nfp.save()
+  pepe.save()
+}
+
+export function handleSetPepeName(call: SetPepeNameCall): void {
+  let pepeId = call.inputs.pepeId.toHex()
+  let name = call.inputs._name.toString()
+
+  let pepe = Pepe.load(pepeId)
+  let nfp = getOrCreateNfp()
+  let cnt = nfp.pepeNamedCnt
+
+  pepe.name = name
+  nfp.pepeNamedCnt = cnt + 1
+
+  nfp.save()
+  pepe.save()
+}
+
+export function handleTransfer(event: Transfer): void {
+  let pepeId = event.params.pepeId.toHex()
+  let fromId = event.params._from.toHex()
+  let toId = event.params._to.toHex()
+
+  let isMint = fromId == ZERO_ADDRESS
+  let isBurn = toId == ZERO_ADDRESS
+
+  let nfp = getOrCreateNfp()
+  let minted = nfp.mintedCnt
+  let burned = nfp.burnedCnt
+  let transfer = nfp.pepeTransferCnt
+
+  let pepe = Pepe.load(pepeId)
+
+  if (isMint) {
+    nfp.mintedCnt = minted + 1
+  } else if (isBurn) {
+    nfp.burnedCnt = burned + 1
+    pepe.isBurned = true
+  } else {
+    nfp.pepeTransferCnt = transfer + 1
+  }
+
+  pepe.owner = toId
+
+  pepe.save()
+  nfp.save()
+}
+
+export function handlePepeResurrected(event: PepeResurrected): void {
+  let pepeId = event.params.pepeId.toHex()
+  let pepe = Pepe.load(pepeId)
+  pepe.isReborn = true
+
+  let nfp = getOrCreateNfp()
+  let resurrected = nfp.resurrectedCnt
+
+  nfp.resurrectedCnt = resurrected + 1
+
+  nfp.save()
+  pepe.save()
+}
+
+export function handleUserNamed(event: UserNamed): void {
+  let userId = event.params.user.toHex()
+  let userName = event.params.username.toString()
+  let nfp = getOrCreateNfp()
+  let cnt = nfp.userNamedCnt
+
+  let user = getOrCreateUser(userId)
+  user.name = userName
+
+  nfp.userNamedCnt = cnt + 1
+
+  user.save()
+  nfp.save()
+}
+
+export function handleOwnershipRenounced(event: OwnershipRenounced): void {
+  let nfp = getOrCreateNfp()
+  let cnt = nfp.ownershipRenouncedCnt
+
+  nfp.ownershipRenouncedCnt = cnt + 1
+
+  nfp.save()
+}
+
+export function handleOwnershipTransferred(event: OwnershipTransferred): void {
+  let nfp = getOrCreateNfp()
+  let cnt = nfp.ownershipTransferredCnt
+
+  nfp.ownershipTransferredCnt = cnt + 1
+
+  nfp.save()
+}
