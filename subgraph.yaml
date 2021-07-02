@@ -32,10 +32,6 @@ dataSources:
           handler: handleTransfer
         - event: UserNamed(indexed address,indexed bytes32)
           handler: handleUserNamed
-        - event: OwnershipRenounced(indexed address)
-          handler: handleOwnershipRenounced
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
       file: ./src/mapping.ts
   - kind: ethereum/contract
     name: PepeReborn
@@ -61,20 +57,10 @@ dataSources:
       eventHandlers:
         - event: PepeBorn(indexed uint256,indexed uint256,indexed uint256)
           handler: handlePepeBorn
-        - event: PepeNamed(indexed uint256)
-          handler: handlePepeNamed
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
         - event: UserNamed(indexed address,indexed bytes32)
           handler: handleUserNamed
-        - event: OwnershipRenounced(indexed address)
-          handler: handleOwnershipRenounced
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
         - event: PepeResurrected(uint256)
           handler: handlePepeResurrected
       file: ./src/mapping.ts

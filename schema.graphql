@@ -16,8 +16,6 @@ type NfpStat @entity {
   pepeTransferCnt:Int!
   "users named counter"
   userNamedCnt: Int!
-  ownershipRenouncedCnt: Int!
-  ownershipTransferredCnt: Int!
 }
 
 type Pepe @entity {

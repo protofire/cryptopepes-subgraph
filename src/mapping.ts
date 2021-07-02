@@ -3,8 +3,6 @@ import {
   Transfer,
   PepeResurrected,
   UserNamed,
-  OwnershipRenounced,
-  OwnershipTransferred,
   SetPepeNameCall
 } from "../generated/PepeReborn/PepeReborn"
 import { 
@@ -28,8 +26,6 @@ function getOrCreateNfp(): Nfp {
     nfp.userNamedCnt = 0
     nfp.pepeRenouncedCnt = 0
     nfp.pepeTransferCnt = 0
-    nfp.ownershipRenouncedCnt = 0
-    nfp.ownershipTransferredCnt = 0
   }
 
   return nfp as Nfp
@@ -71,7 +67,6 @@ export function handlePepeBorn(event: PepeBorn): void {
     pepe.mother = motherId
     pepe.father = fatherId
   }
-
 
   nfp.bornCnt = born + 1
 
@@ -150,23 +145,5 @@ export function handleUserNamed(event: UserNamed): void {
   nfp.userNamedCnt = cnt + 1
 
   user.save()
-  nfp.save()
-}
-
-export function handleOwnershipRenounced(event: OwnershipRenounced): void {
-  let nfp = getOrCreateNfp()
-  let cnt = nfp.ownershipRenouncedCnt
-
-  nfp.ownershipRenouncedCnt = cnt + 1
-
-  nfp.save()
-}
-
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {
-  let nfp = getOrCreateNfp()
-  let cnt = nfp.ownershipTransferredCnt
-
-  nfp.ownershipTransferredCnt = cnt + 1
-
   nfp.save()
 }
